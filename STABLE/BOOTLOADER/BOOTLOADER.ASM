@@ -1,61 +1,55 @@
-[org 0x7c00]
-[bits 16]
+[org 0x7c00] ; Define o endereço de origem do código
 
-
-; Skips the includes
+; Pula as inclusões
 jmp Start
 
-%include "./Stable/Bootloader/Print.asm"
-%include "./Stable/Bootloader/Disk.asm"
-%include "./Stable/Bootloader/Memory.asm"
+%include "./STABLE/BOOTLOADER/PRINT.ASM"
+%include "./STABLE/BOOTLOADER/DISK.ASM"
+%include "./STABLE/BOOTLOADER/MEMORY.ASM"
 
-
-; Some BIOSes jump to the boot sector with 0x07c0:0x0000 or 0x0000:0x7c00 and other ways so we set CS to 0
+; Alguns BIOSes pulam para o setor de inicialização com 0x07c0:0x0000 ou 0x0000:0x7c00 e de outras maneiras, então definimos CS para 0
 Start:
-    cli
-    jmp 0x0000:Main
+    cli ; Desabilita interrupções
+    jmp 0x0000:Main ; Salta para a parte principal do código
     nop
 
-
 Main:
-    ; Saves the number of the drive where we currently are
+    ; Salva o número da unidade onde estamos atualmente
     mov [BootDisk], dl
 
-    ; Segments setup
+    ; Configuração dos segmentos
     xor ax, ax
     mov ds, ax
     mov es, ax
     mov fs, ax
     mov gs, ax
 
-    ; Stack setup
+    ; Configuração da pilha
     mov ss, ax
     mov sp, 0x7c00
 
-    sti
+    sti ; Habilita interrupções
 
     call GetMemoryAvaiable
     call ReadDisk
 
-    ; Clears the screen
+    ; Limpa a tela
     mov ah, 0
     mov al, 3
     int 0x10
 
     call PrintLogo
 
-    ; Waits 4 seconds
+    ; Aguarda 4 segundos
     mov cx, 0x2d
     mov dx, 0x4240
     mov ah, 0x86
     int 0x15
 
-    ; Jumps to kernel
+    ; Salta para o kernel
     jmp 0x100:0x0
 
-
-
-; *TRASH CODE WARNING! CONTINUE AT YOUR OWN RISK
+; *AVISO DE CÓDIGO DESNECESSÁRIO! CONTINUE POR SUA PRÓPRIA CONTA E RISCO
 PrintLogo:
     xor cx, cx
 
@@ -69,7 +63,7 @@ PrintLogo:
         jmp .Loop
 
     .Logo:
-        ; You didn't listen to the warning, ah?
+        ; Você não escutou o aviso, ah?
         mov si, MascLogoSpace
         call PrintString
 
@@ -94,7 +88,7 @@ PrintLogo:
         mov si, MascLogo3
         call PrintString
 
-        ; Welcome message
+        ; Mensagem de boas-vindas
         mov si, WelcomeSpace
         call PrintString
 
@@ -103,19 +97,15 @@ PrintLogo:
 
     ret
 
-
-
-
-; Don't kill me pls
+; Por favor, não me mate
 MascLogoSpace: db "                 ", 0
 MascLogo: db "  \  |                      _ \   ___|", 10, 13, 0
 MascLogo1: db " |\/ |   _` |   __|   __|  |   |\___ \", 10, 13, 0
 MascLogo2: db " |   |  (   | \__ \  (     |   |      |", 10, 13, 0
 MascLogo3: db "_|  _| \__._| ____/ \___| \___/ _____/", 10, 13, 10, 13, 0
 WelcomeSpace: db "                      ", 0
-WelcomeMessage: db "Welcome to MascOS! Loading...", 0
+WelcomeMessage: db "Bem-vindo ao MascOS! Carregando...", 0
 
-
-; Fills the rest of the sector with 0s and boot signature
+; Preenche o restante do setor com 0s e a assinatura de boot
 times 510-($-$$) db 0
 dw 0xaa55
