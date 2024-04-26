@@ -4,12 +4,12 @@
 MemoryAvaiable: dw 0
 
 
-; Gets the ammount of KB avaiable to use
+; Consgue a quantidade de memória em KB disponível para uso
 GetMemoryAvaiable:
     push ax
 
     int 0x12
-    mov [MemoryAvaiable], ax ; Saves the number we got
+    mov [MemoryAvaiable], ax ; Salva o número que conseguimos
 
     pop ax
 
